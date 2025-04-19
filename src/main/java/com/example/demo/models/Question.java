@@ -38,5 +38,43 @@ public class Question {
     String correctAnswer;
     String questionText;
 
+    public Question(){}
+    public UUID getQuestionId() {
+        return questionId;
+    }
+    public void setQuestionId(UUID questionId) {
+        this.questionId = questionId;
+    }
+    public Lobby getLobby() {
+        return lobby;
+    }
+    public void setLobby(Lobby lobby) {
+        this.lobby = lobby;
+    }
+    public List<Round> getRounds() {
+        return rounds;
+    }
+    public void setRounds(List<Round> rounds) {
+        this.rounds = rounds;
+    }
+    public List<String> getChoices() {
+        return choices;
+    }
+    public void setChoices(List<String> choices) {
+        this.choices = choices;
+    }
+    public String getCorrectAnswer() {
+        return correctAnswer;
+    }
+    public void setCorrectAnswer(String correctAnswer) {
+        this.correctAnswer = correctAnswer;
+    }
+    public String getQuestionText() {
+        return questionText;
+    }
+    public void setQuestionText(String questionText) {
+        this.questionText = questionText;
+    }
+
     
 }

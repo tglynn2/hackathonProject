@@ -27,8 +27,46 @@ public class Student {
     @JsonBackReference
     private Lobby lobby;
 
+     public Student(){}
+
     public void setName(String name) {
         this.name = name;
+    }
+
+    public UUID getStudentId() {
+        return studentId;
+    }
+
+    public void setStudentId(UUID studentId) {
+        this.studentId = studentId;
+    }
+
+    public int getScore() {
+        return score;
+    }
+
+    public void setScore(int score) {
+        this.score = score;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public Teacher getTeacher() {
+        return teacher;
+    }
+
+    public void setTeacher(Teacher teacher) {
+        this.teacher = teacher;
+    }
+
+    public Lobby getLobby() {
+        return lobby;
+    }
+
+    public void setLobby(Lobby lobby) {
+        this.lobby = lobby;
     }
 
 

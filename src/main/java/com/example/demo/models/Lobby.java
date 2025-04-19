@@ -28,4 +28,38 @@ private List<Student> students;
 @JsonManagedReference
 private List<Question> questions;
 
+public Lobby(){}
+
+public UUID getLobbyId() {
+    return lobbyId;
+}
+
+public void setLobbyId(UUID lobbyId) {
+    this.lobbyId = lobbyId;
+}
+
+public Teacher getTeacher() {
+    return teacher;
+}
+
+public void setTeacher(Teacher teacher) {
+    this.teacher = teacher;
+}
+
+public List<Student> getStudents() {
+    return students;
+}
+
+public void setStudents(List<Student> students) {
+    this.students = students;
+}
+
+public List<Question> getQuestions() {
+    return questions;
+}
+
+public void setQuestions(List<Question> questions) {
+    this.questions = questions;
+}
+
 }
