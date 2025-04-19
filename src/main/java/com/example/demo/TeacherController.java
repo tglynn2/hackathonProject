@@ -17,6 +17,7 @@ public class TeacherController {
     @PostMapping
     public Teacher createTeacher(@RequestParam(required = true) String name){
         Teacher teacher = new Teacher();
+        teacher.setName(name);
         return teacherService.saveTeacher(teacher);
     }
 } 
