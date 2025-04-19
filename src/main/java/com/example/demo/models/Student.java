@@ -26,4 +26,10 @@ public class Student {
     @JoinColumn(name="l_id")
     @JsonBackReference
     private Lobby lobby;
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+
 }
