@@ -26,6 +26,4 @@ public class Student {
     @JoinColumn(name="l_id")
     @JsonBackReference
     private Lobby lobby;
-
-
 }

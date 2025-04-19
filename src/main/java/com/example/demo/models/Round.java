@@ -20,6 +20,20 @@ public class Round {
     @JoinColumn(name="t_id")
     @JsonBackReference
     private Teacher teacher;
+    public Round() {
+    }
+    public UUID getId() {
+        return id;
+    }
+    public void setId(UUID id) {
+        this.id = id;
+    }
+    public Teacher getTeacher() {
+        return teacher;
+    }
+    public void setTeacher(Teacher teacher) {
+        this.teacher = teacher;
+    }
 
 
 }

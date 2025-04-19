@@ -23,4 +23,9 @@ private Teacher teacher;
 @OneToMany(mappedBy = "lobby",cascade = CascadeType.ALL)
 @JsonManagedReference
 private List<Student> students;
+
+@OneToMany(mappedBy = "lobby",cascade = CascadeType.ALL)
+@JsonManagedReference
+private List<Question> questions;
+
 }
