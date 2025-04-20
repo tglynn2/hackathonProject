@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TriviaRace - Student</title>
+    <title>TriviaRace - Join Lobby</title>
     <style>
         body {
             font-family: 'Arial', sans-serif;
@@ -11,7 +11,7 @@
             padding: 0;
             background-color: #f5f0ff;
         }
-        
+
         .header {
             padding: 20px 40px;
             text-align: left;
@@ -19,12 +19,12 @@
             color: yellow;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
         }
-        
+
         .header h1 {
             margin: 0;
             font-size: 32px;
         }
-        
+
         .header p {
             margin: 5px 0 0;
             font-size: 16px;
@@ -78,8 +78,7 @@
         .form-container button:active {
             transform: translateY(2px);
         }
-        
-        /* Responsive adjustments */
+
         @media (max-width: 900px) {
             .container {
                 flex-direction: column;
@@ -91,11 +90,12 @@
 <body>
     <div class="header">
         <h1>TriviaRace</h1>
-        <p>Welcome, Student! Please enter your Lobby ID:</p>
+        <p>Welcome, Student! Enter your Name and Lobby ID:</p>
     </div>
-    
+
     <div class="container">
         <div class="form-container">
+            <input type="text" id="student-name" placeholder="Enter Your Name" />
             <input type="text" id="lobby-id" placeholder="Enter Lobby ID" />
             <button id="submit-btn">Join Lobby</button>
         </div>
@@ -103,12 +103,29 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            document.getElementById('submit-btn').addEventListener('click', function() {
+            document.getElementById('submit-btn').addEventListener('click', async function() {
+                const name = document.getElementById('student-name').value.trim();
                 const lobbyId = document.getElementById('lobby-id').value.trim();
-                if (lobbyId) {
-                    window.location.href = `http://localhost:8080/students/${lobbyId}`;
-                } else {
-                    alert('Please enter a valid Lobby ID.');
+
+                if (!name || !lobbyId) {
+                    alert('Please enter both name and lobby ID.');
+                    return;
+                }
+
+                try {
+                    const response = await fetch(`http://localhost:8080/students/${lobbyId}?name=${encodeURIComponent(name)}`, {
+                        method: 'POST'
+                    });
+
+                    if (response.ok) {
+                        window.location.href = `/student-lobby.html?name=${encodeURIComponent(name)}&lobbyId=${lobbyId}`;
+                    } else {
+                        const errorText = await response.text();
+                        alert(`Failed to join lobby: ${errorText}`);
+                    }
+                } catch (err) {
+                    console.error('Error:', err);
+                    alert('Error joining lobby. Please try again.');
                 }
             });
         });

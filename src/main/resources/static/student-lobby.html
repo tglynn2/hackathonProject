@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TriviaRace - Lobby</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f5f0ff;
+        }
+
+        .header {
+            padding: 20px 40px;
+            text-align: left;
+            background: #6a0dad;
+            color: yellow;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        .header h1 {
+            margin: 0;
+            font-size: 32px;
+        }
+
+        .header p {
+            margin: 5px 0 0;
+            font-size: 16px;
+        }
+
+        .container {
+            padding: 40px;
+            max-width: 600px;
+            margin: auto;
+        }
+
+        #student-list {
+            margin-top: 30px;
+            padding: 20px;
+            background-color: #d1a1ff;
+            border-radius: 15px;
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .student-item {
+            padding: 10px;
+            border-bottom: 1px solid #6a0dad;
+            color: #3a005f;
+        }
+
+        .student-item:last-child {
+            border-bottom: none;
+        }
+
+        .status-message {
+            margin-top: 10px;
+            font-style: italic;
+            color: green;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>TriviaRace</h1>
+        <p>Waiting for game to start...</p>
+    </div>
+
+    <div class="container">
+        <h2>Students in Lobby</h2>
+        <div id="student-list"></div>
+        <p id="status-msg" class="status-message"></p>
+    </div>
+
+    <script>
+        const urlParams = new URLSearchParams(window.location.search);
+        const lobbyId = urlParams.get('lobbyId');
+        const teacherName = urlParams.get('teacher'); // Assuming teacher's name is stored during join
+
+        const studentList = document.getElementById('student-list');
+        const statusMsg = document.getElementById('status-msg');
+
+        function logDebug(message, obj) {
+            console.log(message, obj || '');
+        }
+
+        function showStatusMessage(message, type) {
+            statusMsg.textContent = message;
+            statusMsg.style.color = type === 'error' ? 'red' : 'green';
+        }
+
+        async function fetchStudentsInLobby() {
+            if (!lobbyId) {
+                logDebug('No lobby ID available, cannot fetch students');
+                return;
+            }
+
+            try {
+                const response = await fetch(`/teachers/login?name=${encodeURIComponent(teacherName)}`, {
+                    method: 'GET',
+                    credentials: 'include'
+                });
+
+                logDebug('Teacher data response for student list', { status: response.status });
+
+                if (!response.ok) {
+                    throw new Error(`Failed to fetch teacher data: ${response.status}`);
+                }
+
+                const teacher = await response.json();
+                if (teacher.lobby && teacher.lobby.students) {
+                    updateStudentList(teacher.lobby.students);
+                    showStatusMessage('Student list refreshed', 'success');
+                } else {
+                    updateStudentList([]);
+                }
+            } catch (error) {
+                logDebug('Error fetching students', { error: error.message });
+                console.error('Error fetching students:', error);
+                showStatusMessage(`Error refreshing student list: ${error.message}`, 'error');
+            }
+        }
+
+        function updateStudentList(students) {
+            studentList.innerHTML = '';
+
+            if (!students || students.length === 0) {
+                const emptyMessage = document.createElement('p');
+                emptyMessage.textContent = 'No students have joined yet.';
+                studentList.appendChild(emptyMessage);
+                return;
+            }
+
+            students.forEach(student => {
+                const studentItem = document.createElement('div');
+                studentItem.className = 'student-item';
+                studentItem.textContent = student.name || 'Anonymous';
+                studentList.appendChild(studentItem);
+            });
+        }
+
+        setInterval(fetchStudentsInLobby, 3000); // Refresh every 3 seconds
+    </script>
+</body>
+</html>
