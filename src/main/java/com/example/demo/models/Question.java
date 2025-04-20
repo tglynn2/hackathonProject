@@ -45,11 +45,6 @@ public class Question {
     @Column(name = "is_correct")
     private Map<String, Boolean> options = new HashMap<>();
     
-    // Replace the ManyToMany with ManyToOne
-    @ManyToOne
-    @JoinColumn(name = "lobby_id")
-    @JsonBackReference
-    private Lobby lobby;
     
     @ManyToMany
     @JoinTable(
