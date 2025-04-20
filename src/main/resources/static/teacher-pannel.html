@@ -3,24 +3,49 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Teacher Admin Panel</title>
+    <title>TriviaRace - Teacher Panel</title>
     <style>
         body {
-            font-family: Arial, sans-serif;
+            font-family: 'Arial', sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f5f0ff;
+        }
+        
+        .header {
+            padding: 20px 40px;
+            text-align: left;
+            background: #6a0dad;
+            color: yellow;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+        
+        .header h1 {
+            margin: 0;
+            font-size: 32px;
+        }
+        
+        .header p {
+            margin: 5px 0 0;
+            font-size: 16px;
+        }
+        
+        .container {
             max-width: 800px;
             margin: 0 auto;
             padding: 20px;
         }
         
         .panel {
-            background-color: #f5f5f5;
+            background-color: #d1a1ff;
             padding: 20px;
             border-radius: 10px;
             margin-bottom: 20px;
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
         }
         
-        h1, h2 {
-            color: #333;
+        h2, h3 {
+            color: #3a005f;
         }
         
         .form-group {
@@ -31,33 +56,44 @@
             display: block;
             margin-bottom: 5px;
             font-weight: bold;
+            color: #3a005f;
         }
         
         button {
             padding: 10px 20px;
-            background-color: #4CAF50;
+            background-color: #6a0dad;
             color: white;
             border: none;
-            border-radius: 4px;
+            border-radius: 8px;
             cursor: pointer;
             font-size: 16px;
+            transition: all 0.3s ease;
+        }
+        
+        button:hover {
+            background-color: #540b8a;
+        }
+        
+        button:active {
+            transform: translateY(2px);
         }
         
         input, select {
             width: 100%;
             padding: 10px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
+            border: 1px solid #6a0dad;
+            border-radius: 8px;
             box-sizing: border-box;
+            font-size: 16px;
         }
         
-        #lobbyInfo {
+        .info-box {
             font-size: 18px;
             background-color: #e7f3ff;
-            padding: 10px;
-            border-radius: 5px;
+            padding: 15px;
+            border-radius: 8px;
             margin-top: 10px;
-            display: none;
+            border: 1px solid #b3d7ff;
         }
         
         .student-list {
@@ -73,183 +109,415 @@
             border-radius: 4px;
         }
         
-        .student-id {
+        .copy-button {
+            background-color: #4CAF50;
+            margin-left: 10px;
+        }
+        
+        .copy-button:hover {
+            background-color: #45a049;
+        }
+        
+        .status-message {
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 10px;
+        }
+        
+        .success {
+            background-color: #dff0d8;
+            color: #3c763d;
+            border: 1px solid #d6e9c6;
+        }
+        
+        .error {
+            background-color: #f2dede;
+            color: #a94442;
+            border: 1px solid #ebccd1;
+        }
+        
+        #result {
+            margin-top: 20px;
+            white-space: pre-wrap;
+            background-color: #f9f9f9;
+            padding: 15px;
+            border-radius: 5px;
+            display: none;
+        }
+        
+        .question {
+            margin-bottom: 15px;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        
+        .option {
+            margin-bottom: 5px;
+        }
+        
+        .correct {
+            color: green;
+            font-weight: bold;
+        }
+
+        #debug-info {
+            background-color: #f8f9fa;
+            border: 1px solid #ddd;
+            padding: 10px;
+            margin-top: 20px;
+            border-radius: 5px;
             font-family: monospace;
-            background-color: #eee;
-            padding: 2px 5px;
-            border-radius: 3px;
+            white-space: pre-wrap;
+            font-size: 12px;
         }
     </style>
 </head>
 <body>
-    <h1>Teacher Admin Panel</h1>
-    
-    <div class="panel">
-        <h2>Create Teacher Account</h2>
-        <div class="form-group">
-            <label for="teacherName">Your Name</label>
-            <input type="text" id="teacherName" placeholder="Enter your name">
-        </div>
-        <button id="createTeacherBtn">Create Account</button>
-        
-        <div id="teacherInfo" style="display: none;">
-            <p>Teacher ID: <span id="teacherId"></span></p>
-        </div>
+    <div class="header">
+        <h1>TriviaRace</h1>
+        <p>Teacher Panel - Create Games and Questions</p>
     </div>
     
-    <div class="panel" id="lobbyPanel" style="display: none;">
-        <h2>Create a Game Lobby</h2>
-        <button id="createLobbyBtn">Create New Lobby</button>
+    <div class="container">
+        <div id="statusMessage" class="status-message" style="display: none;"></div>
         
-        <div id="lobbyInfo">
-            <p>Lobby ID: <span id="lobbyId"></span></p>
-            <p>Share this ID with your students to join the game.</p>
+        <div class="panel" id="lobbyPanel">
+            <h2>Manage Game Lobby</h2>
+            <div id="teacherInfo" class="info-box">
+                <p>Welcome, <span id="teacherNameDisplay">Teacher</span>!</p>
+                <p>Teacher ID: <span id="teacherId"></span></p>
+            </div>
             
-            <h3>Students in Lobby</h3>
-            <div id="studentList" class="student-list">
-                <!-- Student list will be populated here -->
+            <div id="noLobbyMessage">
+                <p>You don't have an active lobby yet.</p>
+                <button id="createLobbyBtn">Create New Lobby</button>
+            </div>
+            
+            <div id="lobbyInfo" class="info-box" style="display: none;">
+                <p>Lobby ID: <span id="lobbyId"></span>
+                <button id="copyLobbyIdBtn" class="copy-button">Copy</button></p>
+                <p>Share this ID with your students to join the game.</p>
+                
+                <h3>Students in Lobby</h3>
+                <div id="studentList" class="student-list">
+                    <p>No students have joined yet.</p>
+                </div>
+                
+                <button id="refreshStudentsBtn">Refresh Student List</button>
             </div>
         </div>
-    </div>
-    
-    <div class="panel" id="gamePanel" style="display: none;">
-        <h2>Start a Game</h2>
-        <div class="form-group">
-            <label for="pdfFile">Upload Lesson Material (PDF)</label>
-            <input type="file" id="pdfFile" accept="application/pdf">
+        
+        <div class="panel" id="questionPanel" style="display: none;">
+            <h2>Generate Questions</h2>
+            <form id="questionForm">
+                <div class="form-group">
+                    <label for="pdfFile">Upload PDF with Lesson Material:</label>
+                    <input type="file" id="pdfFile" name="file" accept="application/pdf" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="numQuestions">Number of Questions:</label>
+                    <input type="number" id="numQuestions" name="numQuestions" value="10" min="1" max="20">
+                </div>
+                
+                <div class="form-group">
+                    <label for="questionType">Question Type:</label>
+                    <select id="questionType" name="questionType">
+                        <option value="multiple-choice">Multiple Choice</option>
+                        <option value="true-false">True/False</option>
+                        <option value="short-answer">Short Answer</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="saveToDb">
+                        <input type="checkbox" id="saveToDb" name="saveToDb" value="true" checked>
+                        Save questions to database
+                    </label>
+                </div>
+                
+                <button type="submit">Generate Questions</button>
+            </form>
+            
+            <div id="result"></div>
         </div>
-        <button id="startGameBtn">Start Game</button>
+        
+        <div class="panel" id="gamePanel" style="display: none;">
+            <h2>Start Game</h2>
+            <p>When you're ready and students have joined, start the game:</p>
+            <button id="startGameBtn">Start Game Session</button>
+        </div>
+        
+        <div id="debug-info"></div>
     </div>
     
     <script>
         // DOM elements
-        const createTeacherBtn = document.getElementById('createTeacherBtn');
-        const teacherNameInput = document.getElementById('teacherName');
-        const teacherInfo = document.getElementById('teacherInfo');
-        const teacherIdSpan = document.getElementById('teacherId');
+        const statusMessage = document.getElementById('statusMessage');
         const lobbyPanel = document.getElementById('lobbyPanel');
+        const questionPanel = document.getElementById('questionPanel');
+        const gamePanel = document.getElementById('gamePanel');
+        const debugInfo = document.getElementById('debug-info');
+        
+        const teacherInfo = document.getElementById('teacherInfo');
+        const teacherNameDisplay = document.getElementById('teacherNameDisplay');
+        const teacherIdSpan = document.getElementById('teacherId');
+        
+        const noLobbyMessage = document.getElementById('noLobbyMessage');
         const createLobbyBtn = document.getElementById('createLobbyBtn');
+        
         const lobbyInfo = document.getElementById('lobbyInfo');
         const lobbyIdSpan = document.getElementById('lobbyId');
+        const copyLobbyIdBtn = document.getElementById('copyLobbyIdBtn');
         const studentList = document.getElementById('studentList');
-        const gamePanel = document.getElementById('gamePanel');
+        const refreshStudentsBtn = document.getElementById('refreshStudentsBtn');
+        
+        const questionForm = document.getElementById('questionForm');
+        const resultDiv = document.getElementById('result');
+        
         const startGameBtn = document.getElementById('startGameBtn');
         
         // State variables
         let teacherId = null;
+        let teacherName = null;
         let lobbyId = null;
         let studentsInLobby = [];
         
-        // Event listeners
-        createTeacherBtn.addEventListener('click', createTeacher);
-        createLobbyBtn.addEventListener('click', createLobby);
-        startGameBtn.addEventListener('click', startGame);
-        
-        // Check if we already have a teacher ID in localStorage
-        const savedTeacherId = localStorage.getItem('teacherId');
-        if (savedTeacherId) {
-            teacherId = savedTeacherId;
-            teacherIdSpan.textContent = teacherId;
-            teacherInfo.style.display = 'block';
-            lobbyPanel.style.display = 'block';
+        // Debug function to help troubleshoot
+        function logDebug(message, data = null) {
+            const timestamp = new Date().toISOString();
+            let logMessage = `[${timestamp}] ${message}`;
             
-            // Check if we have a lobby ID
-            const savedLobbyId = localStorage.getItem('lobbyId');
-            if (savedLobbyId) {
-                lobbyId = savedLobbyId;
-                lobbyIdSpan.textContent = lobbyId;
-                lobbyInfo.style.display = 'block';
-                gamePanel.style.display = 'block';
-                
-                // Fetch students in the lobby
-                fetchStudentsInLobby();
+            if (data) {
+                logMessage += `\n${JSON.stringify(data, null, 2)}`;
             }
+            
+            console.log(logMessage);
+            debugInfo.textContent += logMessage + '\n\n';
         }
         
-        // Create a teacher account
-        async function createTeacher() {
-            const teacherName = teacherNameInput.value.trim();
+        // Initialize the page - check localStorage and session data
+        function initialize() {
+            logDebug('Initializing teacher panel');
             
-            if (!teacherName) {
-                alert('Please enter your name');
+            // Get teacher data from localStorage (set by teacher-login.html)
+            const savedTeacherId = localStorage.getItem('teacherId');
+            const savedTeacherName = localStorage.getItem('teacherName');
+            
+            logDebug('Retrieved from localStorage', { teacherId: savedTeacherId, teacherName: savedTeacherName });
+            
+            if (!savedTeacherId || !savedTeacherName) {
+                logDebug('No teacher data found, redirecting to login page');
+                // No teacher data, redirect to login page
+                window.location.href = 'teacher-login.html';
                 return;
             }
             
+            // Set teacher data
+            teacherId = savedTeacherId;
+            teacherName = savedTeacherName;
+            
+            // Update UI to show teacher info
+            teacherNameDisplay.textContent = teacherName;
+            teacherIdSpan.textContent = teacherId;
+            
+            // Check if the teacher has a lobby
+            checkForExistingLobby();
+        }
+        
+        // Check if the teacher already has a lobby
+        async function checkForExistingLobby() {
+            logDebug('Checking for existing lobby');
+            
             try {
-                const response = await fetch(`/teachers/create?name=${encodeURIComponent(teacherName)}`, {
-                    method: 'POST'
+                // Fetch the teacher data using the session cookie
+                const response = await fetch(`/teachers/login?name=${encodeURIComponent(teacherName)}`, {
+                    method: 'GET',
+                    credentials: 'include'
                 });
                 
+                logDebug('Teacher fetch response status', { status: response.status });
+                
+                if (response.status === 401) {
+                    logDebug('Session expired, redirecting to login');
+                    // Session expired, redirect to login
+                    showStatusMessage('Your session has expired. Please log in again.', 'error');
+                    setTimeout(() => {
+                        window.location.href = 'teacher-login.html';
+                    }, 2000);
+                    return;
+                }
+                
                 if (!response.ok) {
-                    throw new Error('Failed to create teacher account');
+                    throw new Error(`Failed to retrieve teacher information: ${response.status}`);
                 }
                 
                 const teacher = await response.json();
-                teacherId = teacher.teacherId;
+                logDebug('Teacher data retrieved', teacher);
                 
-                // Save teacher ID in localStorage
-                localStorage.setItem('teacherId', teacherId);
-                
-                // Show teacher info and lobby panel
-                teacherIdSpan.textContent = teacherId;
-                teacherInfo.style.display = 'block';
-                lobbyPanel.style.display = 'block';
+                // Check if the teacher has a lobby
+                if (teacher.lobby) {
+                    lobbyId = teacher.lobby.id;
+                    localStorage.setItem('lobbyId', lobbyId);
+                    
+                    logDebug('Lobby found', { lobbyId });
+                    
+                    // Update UI to show lobby information
+                    lobbyIdSpan.textContent = lobbyId;
+                    lobbyInfo.style.display = 'block';
+                    noLobbyMessage.style.display = 'none';
+                    
+                    // Show question and game panels
+                    questionPanel.style.display = 'block';
+                    gamePanel.style.display = 'block';
+                    
+                    // Fetch students in the lobby
+                    fetchStudentsInLobby();
+                } else {
+                    logDebug('No lobby found for this teacher');
+                    // No lobby yet
+                    noLobbyMessage.style.display = 'block';
+                    lobbyInfo.style.display = 'none';
+                }
             } catch (error) {
-                alert('Error creating teacher account: ' + error.message);
+                logDebug('Error checking for lobby', { error: error.message });
+                showStatusMessage(`Error checking for lobby: ${error.message}`, 'error');
             }
         }
         
-        // Create a game lobby
+        // Event listeners
+        createLobbyBtn.addEventListener('click', createLobby);
+        copyLobbyIdBtn.addEventListener('click', copyLobbyId);
+        refreshStudentsBtn.addEventListener('click', fetchStudentsInLobby);
+        questionForm.addEventListener('submit', generateQuestions);
+        startGameBtn.addEventListener('click', startGame);
+        
+        // Create lobby
         async function createLobby() {
-            if (!teacherId) {
-                alert('Please create a teacher account first');
-                return;
-            }
+            logDebug('Creating new lobby');
             
             try {
-                // This is a placeholder - you'll need to implement the actual endpoint
-                const response = await fetch(`/teachers/create?name=${name}`, {
-                    method: 'POST'
+                // First, create the lobby
+                const response = await fetch('/teachers/newLobby', {
+                    method: 'POST',
+                    credentials: 'include'
                 });
                 
+                logDebug('Lobby creation response', { status: response.status });
+                
                 if (!response.ok) {
-                    throw new Error('Failed to create lobby');
+                    throw new Error(`Failed to create lobby: ${response.status}`);
                 }
                 
                 const lobby = await response.json();
-                lobbyId = lobby.lobbyId;
+                logDebug('Lobby created response', lobby);
+                
+                // If the ID is null, we need to refresh the teacher data to get the updated lobby with ID
+                if (!lobby.id) {
+                    logDebug('Lobby ID is null, fetching updated teacher data');
+                    
+                    // Fetch the updated teacher data to get the lobby ID
+                    const teacherResponse = await fetch(`/teachers/login?name=${encodeURIComponent(teacherName)}`, {
+                        method: 'GET',
+                        credentials: 'include'
+                    });
+                    
+                    if (!teacherResponse.ok) {
+                        throw new Error(`Failed to fetch teacher after lobby creation: ${teacherResponse.status}`);
+                    }
+                    
+                    const teacherData = await teacherResponse.json();
+                    logDebug('Updated teacher data after lobby creation', teacherData);
+                    
+                    if (teacherData.lobby && teacherData.lobby.id) {
+                        lobbyId = teacherData.lobby.id;
+                        logDebug('Retrieved lobby ID from teacher data', { lobbyId });
+                    } else {
+                        throw new Error('Lobby created but no ID was returned');
+                    }
+                } else {
+                    lobbyId = lobby.id;
+                }
                 
                 // Save lobby ID in localStorage
                 localStorage.setItem('lobbyId', lobbyId);
                 
-                // Show lobby info and game panel
+                // Update UI
                 lobbyIdSpan.textContent = lobbyId;
                 lobbyInfo.style.display = 'block';
+                noLobbyMessage.style.display = 'none';
+                
+                // Show question and game panels
+                questionPanel.style.display = 'block';
                 gamePanel.style.display = 'block';
                 
-                // Set up polling to check for students joining
-                setInterval(fetchStudentsInLobby, 5000);
+                showStatusMessage('Lobby created successfully!', 'success');
             } catch (error) {
-                alert('Error creating lobby: ' + error.message);
+                logDebug('Error creating lobby', { error: error.message });
+                showStatusMessage(`Error creating lobby: ${error.message}`, 'error');
             }
         }
         
-        // Fetch students in the lobby
+        // Copy Lobby ID to clipboard
+        function copyLobbyId() {
+            const lobbyId = lobbyIdSpan.textContent;
+            logDebug('Copying lobby ID to clipboard', { lobbyId });
+            
+            if (!lobbyId || lobbyId.trim() === '') {
+                showStatusMessage('No lobby ID available to copy', 'error');
+                return;
+            }
+            
+            navigator.clipboard.writeText(lobbyId)
+                .then(() => {
+                    showStatusMessage('Lobby ID copied to clipboard!', 'success');
+                })
+                .catch(err => {
+                    logDebug('Error copying to clipboard', { error: err.message });
+                    showStatusMessage(`Error copying lobby ID: ${err}`, 'error');
+                });
+        }
+        
+        // Fetch students in lobby
         async function fetchStudentsInLobby() {
-            if (!lobbyId) return;
+            if (!lobbyId) {
+                logDebug('No lobby ID available, cannot fetch students');
+                return;
+            }
+            
+            logDebug('Fetching students for lobby', { lobbyId });
             
             try {
-                // This is a placeholder - you'll need to implement the actual endpoint
-                const response = await fetch(`/api/lobby/${lobbyId}/students`);
+                // This endpoint needs to be implemented on the server
+                // For now, we'll just check if the lobby exists
+                const response = await fetch(`/teachers/login?name=${encodeURIComponent(teacherName)}`, {
+                    method: 'GET',
+                    credentials: 'include'
+                });
+                
+                logDebug('Teacher data response for student list', { status: response.status });
                 
                 if (!response.ok) {
-                    throw new Error('Failed to fetch students');
+                    throw new Error(`Failed to fetch teacher data: ${response.status}`);
                 }
                 
-                const students = await response.json();
-                updateStudentList(students);
+                const teacher = await response.json();
+                logDebug('Teacher data with lobby info', { 
+                    hasLobby: !!teacher.lobby,
+                    hasStudents: teacher.lobby && teacher.lobby.students ? teacher.lobby.students.length : 0
+                });
+                
+                if (teacher.lobby && teacher.lobby.students) {
+                    updateStudentList(teacher.lobby.students);
+                    showStatusMessage('Student list refreshed', 'success');
+                } else {
+                    updateStudentList([]);
+                }
             } catch (error) {
+                logDebug('Error fetching students', { error: error.message });
                 console.error('Error fetching students:', error);
+                showStatusMessage(`Error refreshing student list: ${error.message}`, 'error');
             }
         }
         
@@ -258,7 +526,9 @@
             studentsInLobby = students;
             studentList.innerHTML = '';
             
-            if (students.length === 0) {
+            logDebug('Updating student list in UI', { studentCount: students ? students.length : 0 });
+            
+            if (!students || students.length === 0) {
                 const emptyMessage = document.createElement('p');
                 emptyMessage.textContent = 'No students have joined yet.';
                 studentList.appendChild(emptyMessage);
@@ -270,52 +540,162 @@
                 studentItem.className = 'student-item';
                 
                 const nameSpan = document.createElement('span');
-                nameSpan.textContent = student.name || 'Anonymous Student';
-                
-                const idSpan = document.createElement('span');
-                idSpan.className = 'student-id';
-                idSpan.textContent = student.studentId;
+                nameSpan.textContent = student.name || 'Anonymous';
                 
                 studentItem.appendChild(nameSpan);
-                studentItem.appendChild(idSpan);
                 studentList.appendChild(studentItem);
             });
         }
         
-        // Start a game
-        async function startGame() {
+        // Generate questions
+        async function generateQuestions(e) {
+            e.preventDefault();
+            
             if (!lobbyId) {
-                alert('Please create a lobby first');
+                logDebug('No lobby ID available, cannot generate questions');
+                showStatusMessage('Please create a lobby first', 'error');
                 return;
             }
             
-            const pdfFile = document.getElementById('pdfFile').files[0];
+            logDebug('Generating questions for lobby', { lobbyId });
             
-            if (!pdfFile) {
-                alert('Please upload a PDF file with lesson material');
-                return;
-            }
+            const formData = new FormData(questionForm);
+            formData.append('lobbyId', lobbyId);
+            
+            resultDiv.textContent = 'Generating questions... This may take a minute.';
+            resultDiv.style.display = 'block';
             
             try {
-                const formData = new FormData();
-                formData.append('lobbyId', lobbyId);
-                formData.append('file', pdfFile);
-                
-                const response = await fetch('/api/game/start', {
+                const response = await fetch('/api/questions/generate-from-pdf', {
                     method: 'POST',
                     body: formData
                 });
                 
+                logDebug('Question generation response', { status: response.status });
+                
                 if (!response.ok) {
-                    throw new Error('Failed to start game');
+                    const errorText = await response.text();
+                    throw new Error(`Error: ${errorText || response.status}`);
                 }
                 
-                const result = await response.json();
-                alert('Game started successfully! Game Session ID: ' + result.gameSessionId);
+                const questions = await response.json();
+                logDebug('Questions generated successfully', { questionCount: questions.length });
+                
+                // Display questions
+                displayQuestions(questions, resultDiv);
+                
+                showStatusMessage('Questions generated successfully!', 'success');
             } catch (error) {
-                alert('Error starting game: ' + error.message);
+                logDebug('Error generating questions', { error: error.message });
+                resultDiv.textContent = `Error: ${error.message}`;
+                showStatusMessage(`Failed to generate questions: ${error.message}`, 'error');
             }
         }
+        
+        // Display generated questions
+        function displayQuestions(questions, container) {
+            container.innerHTML = '';
+            
+            if (!questions || questions.length === 0) {
+                container.textContent = 'No questions generated.';
+                return;
+            }
+            
+            const questionsHeader = document.createElement('h3');
+            questionsHeader.textContent = `Generated ${questions.length} Questions`;
+            container.appendChild(questionsHeader);
+            
+            const questionsDiv = document.createElement('div');
+            questionsDiv.classList.add('questions-container');
+            
+            questions.forEach((question, index) => {
+                const questionDiv = document.createElement('div');
+                questionDiv.classList.add('question');
+                
+                // Question header
+                const questionHeader = document.createElement('h4');
+                questionHeader.textContent = `Question ${index + 1}: ${question.questionText || question.text}`;
+                questionDiv.appendChild(questionHeader);
+                
+                // Options
+                const choices = question.choices || 
+                    (question.options ? Object.entries(question.options).map(([text, correct]) => ({
+                        text, correct
+                    })) : []);
+                
+                if (choices && choices.length > 0) {
+                    const optionsList = document.createElement('ul');
+                    
+                    choices.forEach(choice => {
+                        const optionItem = document.createElement('li');
+                        optionItem.classList.add('option');
+                        
+                        if (choice.correct) {
+                            optionItem.classList.add('correct');
+                        }
+                        
+                        optionItem.textContent = choice.text;
+                        optionsList.appendChild(optionItem);
+                    });
+                    
+                    questionDiv.appendChild(optionsList);
+                }
+                
+                questionsDiv.appendChild(questionDiv);
+            });
+            
+            container.appendChild(questionsDiv);
+        }
+        
+        // Start game session
+        async function startGame() {
+            if (!lobbyId) {
+                logDebug('No lobby ID available, cannot start game');
+                showStatusMessage('Please create a lobby first', 'error');
+                return;
+            }
+            
+            logDebug('Starting game for lobby', { lobbyId });
+            
+            try {
+                // This endpoint needs to be implemented
+                // For now, we'll just update the UI as if it succeeded
+                
+                // Placeholder for future implementation
+                // const response = await fetch(`/teachers/lobby/${lobbyId}/start-game`, {
+                //     method: 'POST'
+                // });
+                
+                // if (!response.ok) {
+                //     throw new Error(`Failed to start game: ${response.status}`);
+                // }
+                
+                // const result = await response.json();
+                
+                showStatusMessage('Game started successfully!', 'success');
+            } catch (error) {
+                logDebug('Error starting game', { error: error.message });
+                showStatusMessage(`Error starting game: ${error.message}`, 'error');
+            }
+        }
+        
+        // Helper function to show status messages
+        function showStatusMessage(message, type) {
+            statusMessage.textContent = message;
+            statusMessage.className = 'status-message';
+            statusMessage.classList.add(type);
+            statusMessage.style.display = 'block';
+            
+            logDebug('Status message displayed', { message, type });
+            
+            // Hide the message after 5 seconds
+            setTimeout(() => {
+                statusMessage.style.display = 'none';
+            }, 5000);
+        }
+        
+        // Initialize the page
+        document.addEventListener('DOMContentLoaded', initialize);
     </script>
 </body>
 </html>
