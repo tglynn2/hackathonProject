@@ -1,18 +1,14 @@
 package com.example.demo.models;
 
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 
-import jakarta.persistence.CascadeType;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.OneToMany;
-import jakarta.persistence.OneToOne;
+import jakarta.persistence.*;
 
 @Entity
 public class Lobby {
@@ -64,4 +60,133 @@ public void setQuestions(List<Question> questions) {
     this.questions = questions;
 }
 
+
+
+
+
+
+
+
+
+
+
+    @Enumerated(EnumType.STRING)
+    private GameState currentState = GameState.WAITING_FOR_PLAYERS;
+
+    private int currentQuestionIndex = 0;
+
+    @Transient
+    private Map<UUID, String> currentAnswers = new ConcurrentHashMap<>();
+    //keep track of currentAnswers
+
+    public enum Event {
+        START_GAME,
+        TIMER_EXPIRED,
+        ALL_ANSWERED,
+        NEXT_QUESTION
+    }
+
+    //needed
+    // a timer for how long the question is up
+    //how are getting the questions, are they in an array
+    //where do we pull answers from
+
+
+    public enum GameState {
+        WAITING_FOR_PLAYERS,
+        SHOW_QUESTION,
+        COLLECT_ANSWERS,
+        MOVE_HORSES,
+        FINISHED
+    }
+
+
+
+
+
+    public GameState transition(Event e) {
+        switch (currentState) {
+            case WAITING_FOR_PLAYERS:
+
+                if (e == Event.START_GAME) {
+
+                    currentState = GameState.SHOW_QUESTION;
+                }
+                break;
+
+            case SHOW_QUESTION:
+                // Either time ran out or everyone answered
+                if (e == Event.TIMER_EXPIRED || e == Event.ALL_ANSWERED) {
+                    currentState = GameState.COLLECT_ANSWERS;
+                }
+                break;
+
+            case COLLECT_ANSWERS:
+                // Now that all answers are in, advance to moving horses
+                if (e == Event.ALL_ANSWERED) {
+                    currentState = GameState.MOVE_HORSES;
+                    //   moveHorses();     method to move horses
+                    currentAnswers.clear();    //empty cue
+                }
+                break;
+
+            case MOVE_HORSES:
+                //change question
+                if (e == Event.NEXT_QUESTION) {
+                    if (currentQuestionIndex + 1 < questions.size()) {
+                        currentQuestionIndex++;
+                        currentState = GameState.SHOW_QUESTION;
+                    } else {
+                        currentState = GameState.FINISHED;
+                    }
+                }
+                break;
+
+            case FINISHED:
+
+                break;
+        }
+
+        return currentState;
+    }
+
+    int points = 5;
+
+
+//    private void moveHorses() {
+//        Question q = questions.get(currentQuestionIndex);
+//       //  points per answer, we could have some answers be worht more? that would have to be an Ai call though
+//        for (Student s : students) {
+//            String answer = currentAnswers.get(s.getStudentId());
+//
+//            boolean correct = //answer is correct method?
+//
+//            if (correct) {
+//
+//                s.setScore(s.getScore() + points);
+//            }
+//        }
+//        currentAnswers.clear();
+//    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 }
+
+
+
