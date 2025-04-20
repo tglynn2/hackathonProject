@@ -20,6 +20,9 @@ public class Round {
     @JoinColumn(name="t_id")
     @JsonBackReference
     private Teacher teacher;
+
+
+
     public Round() {
     }
     public UUID getId() {
@@ -36,7 +39,8 @@ public class Round {
     }
 
 
-    //map of answers with player id keys, or maybe we should put it in lobby depending
+
 
 
 }
+
