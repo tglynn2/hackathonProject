@@ -25,6 +25,7 @@ public class Teacher {
     @JsonManagedReference
     private List<Student> students;    
     @OneToOne(cascade = CascadeType.ALL)
+    @JsonManagedReference
     private Lobby lobby;    
 
     private String name;

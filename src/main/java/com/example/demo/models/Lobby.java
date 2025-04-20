@@ -3,6 +3,7 @@ package com.example.demo.models;
 import java.util.List;
 import java.util.UUID;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 
 import jakarta.persistence.CascadeType;
@@ -19,6 +20,7 @@ public class Lobby {
 @GeneratedValue(strategy = GenerationType.AUTO)
 private UUID id;
 @OneToOne(mappedBy = "lobby", cascade = CascadeType.ALL)
+@JsonBackReference
 private Teacher teacher;
 @OneToMany(mappedBy = "lobby",cascade = CascadeType.ALL)
 @JsonManagedReference

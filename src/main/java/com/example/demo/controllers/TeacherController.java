@@ -53,7 +53,7 @@ public class TeacherController {
         lobby.setTeacher(teacher);
         teacher.setLobby(lobby);
         teacherService.saveTeacher(teacher);
+        lobby.setLobbyId(teacher.getLobby().getId());
         return lobby;
-       
     }
 } 
