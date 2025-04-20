@@ -41,8 +41,6 @@ public class StudentController {
             lobby.getStudents().add(student);
             teacher.getStudents().add(student);
             return studentService.saveStudent(student);
-
-
         
     }
 }
