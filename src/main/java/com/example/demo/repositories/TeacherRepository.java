@@ -11,5 +11,7 @@ public interface TeacherRepository extends CrudRepository<Teacher,UUID> {
 
     public Optional<Teacher> getTeacherByName(String name);
 
+    public Optional<Teacher> findById(UUID id);
+
     
 }

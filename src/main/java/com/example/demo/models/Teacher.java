@@ -17,7 +17,7 @@ import jakarta.persistence.OneToOne;
 public class Teacher {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
-    private UUID teacherId;
+    private UUID id;
      @OneToMany(mappedBy = "teacher",cascade = CascadeType.ALL)
     @JsonManagedReference
     private List<Round> rounds;
@@ -31,12 +31,12 @@ public class Teacher {
 
     public Teacher(){}
 
-    public UUID getTeacherId() {
-        return teacherId;
+    public UUID getId() {
+        return id;
     }
 
-    public void setTeacherId(UUID teacherId) {
-        this.teacherId = teacherId;
+    public void setId(UUID id) {
+        this.id = id;
     }
 
     public List<Round> getRounds() {

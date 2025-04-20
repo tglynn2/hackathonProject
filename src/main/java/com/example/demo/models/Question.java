@@ -26,6 +26,13 @@ import jakarta.persistence.MapKeyColumn;
 public class Question {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
+    private UUID id;
+
+
+    @ManyToOne
+    @JoinColumn(name="l_id")
+    @JsonBackReference
+    private Lobby lobby;
     private UUID questionId;
     
     @Column(length = 1000)
