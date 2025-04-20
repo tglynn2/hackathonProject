@@ -70,11 +70,11 @@ public void setQuestions(List<Question> questions) {
 
 
 
-
     @Enumerated(EnumType.STRING)
     private GameState currentState = GameState.WAITING_FOR_PLAYERS;
 
     private int currentQuestionIndex = 10;
+
 
 
     @Transient
@@ -82,11 +82,14 @@ public void setQuestions(List<Question> questions) {
     //player id as key and answer
 
 
-    //this somwehere
-    //if ( currentAnswers.size = 4) assuming 4 players, we need a player amount variable
-    //{
-     //   transition ( ALL_ANSWERED)
-   // }
+    public void addAnswer (UUID id, String answer) {
+        currentAnswers.put(id, answer);
+        if (currentAnswers.size() == students.size()) {
+            transition(Event.ALL_ANSWERED);
+        }
+    }
+
+
 
 
 
@@ -142,8 +145,13 @@ public void setQuestions(List<Question> questions) {
                 // Now that all answers are in, advance to moving horses
 
                 if (e == Event.ALL_ANSWERED) {
+
+                    if (currentQuestionIndex < questions.size() -1) {
+                       currentState = GameState.FINISHED;
+                    }
+
                     currentState = GameState.MOVE_HORSES;
-                    //   moveHorses();     method to move horses
+                     moveHorses();
                     currentAnswers.clear();    //empty cue
                 }
                 break;
@@ -157,6 +165,7 @@ public void setQuestions(List<Question> questions) {
                     } else {
                         currentState = GameState.FINISHED;
                     }
+
                 }
                 break;
 
@@ -191,6 +200,14 @@ public void setQuestions(List<Question> questions) {
         currentAnswers.clear();
     }
 
+
+    public void startGame() {
+        currentQuestionIndex = 0;
+
+        currentAnswers.clear();
+
+        transition(Event.START_GAME);
+    }
 
 
 
