@@ -15,6 +15,7 @@ import java.util.List;
 /**
  * Service to interact with the Google Gemini API for question generation.
  */
+@Deprecated
 @Service
 public class GeminiQuestionGeneratorService {
 

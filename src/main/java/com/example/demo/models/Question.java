@@ -17,6 +17,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.JoinTable;
+
 import jakarta.persistence.ManyToMany;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.MapKeyColumn;
@@ -44,14 +45,7 @@ public class Question {
     @Column(name = "is_correct")
     private Map<String, Boolean> options = new HashMap<>();
     
-    @ManyToMany
-    @JoinTable(
-        name = "lobby_questions",
-        joinColumns = @JoinColumn(name = "questionId"),
-        inverseJoinColumns = @JoinColumn(name = "lobbyId")
-    )
-    private List<Lobby> lobbies = new ArrayList<>();
-
+    
     @ManyToMany
     @JoinTable(
         name = "round_questions",
@@ -111,19 +105,13 @@ public class Question {
         return correctOptions;
     }
 
-    public List<Lobby> getLobbies() {
-        return lobbies;
+    // Add getter and setter for lobby
+    public Lobby getLobby() {
+        return lobby;
     }
 
-    public void setLobbies(List<Lobby> lobbies) {
-        this.lobbies = lobbies;
-    }
-    
-    public void addLobby(Lobby lobby) {
-        if (this.lobbies == null) {
-            this.lobbies = new ArrayList<>();
-        }
-        this.lobbies.add(lobby);
+    public void setLobby(Lobby lobby) {
+        this.lobby = lobby;
     }
 
     public List<Round> getRounds() {
