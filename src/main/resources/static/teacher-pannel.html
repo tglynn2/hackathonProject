@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teacher Admin Panel</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .panel {
+            background-color: #f5f5f5;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+        
+        h1, h2 {
+            color: #333;
+        }
+        
+        .form-group {
+            margin-bottom: 15px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        
+        button {
+            padding: 10px 20px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        
+        input, select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        
+        #lobbyInfo {
+            font-size: 18px;
+            background-color: #e7f3ff;
+            padding: 10px;
+            border-radius: 5px;
+            margin-top: 10px;
+            display: none;
+        }
+        
+        .student-list {
+            margin-top: 15px;
+        }
+        
+        .student-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px;
+            background-color: #f9f9f9;
+            margin-bottom: 5px;
+            border-radius: 4px;
+        }
+        
+        .student-id {
+            font-family: monospace;
+            background-color: #eee;
+            padding: 2px 5px;
+            border-radius: 3px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Teacher Admin Panel</h1>
+    
+    <div class="panel">
+        <h2>Create Teacher Account</h2>
+        <div class="form-group">
+            <label for="teacherName">Your Name</label>
+            <input type="text" id="teacherName" placeholder="Enter your name">
+        </div>
+        <button id="createTeacherBtn">Create Account</button>
+        
+        <div id="teacherInfo" style="display: none;">
+            <p>Teacher ID: <span id="teacherId"></span></p>
+        </div>
+    </div>
+    
+    <div class="panel" id="lobbyPanel" style="display: none;">
+        <h2>Create a Game Lobby</h2>
+        <button id="createLobbyBtn">Create New Lobby</button>
+        
+        <div id="lobbyInfo">
+            <p>Lobby ID: <span id="lobbyId"></span></p>
+            <p>Share this ID with your students to join the game.</p>
+            
+            <h3>Students in Lobby</h3>
+            <div id="studentList" class="student-list">
+                <!-- Student list will be populated here -->
+            </div>
+        </div>
+    </div>
+    
+    <div class="panel" id="gamePanel" style="display: none;">
+        <h2>Start a Game</h2>
+        <div class="form-group">
+            <label for="pdfFile">Upload Lesson Material (PDF)</label>
+            <input type="file" id="pdfFile" accept="application/pdf">
+        </div>
+        <button id="startGameBtn">Start Game</button>
+    </div>
+    
+    <script>
+        // DOM elements
+        const createTeacherBtn = document.getElementById('createTeacherBtn');
+        const teacherNameInput = document.getElementById('teacherName');
+        const teacherInfo = document.getElementById('teacherInfo');
+        const teacherIdSpan = document.getElementById('teacherId');
+        const lobbyPanel = document.getElementById('lobbyPanel');
+        const createLobbyBtn = document.getElementById('createLobbyBtn');
+        const lobbyInfo = document.getElementById('lobbyInfo');
+        const lobbyIdSpan = document.getElementById('lobbyId');
+        const studentList = document.getElementById('studentList');
+        const gamePanel = document.getElementById('gamePanel');
+        const startGameBtn = document.getElementById('startGameBtn');
+        
+        // State variables
+        let teacherId = null;
+        let lobbyId = null;
+        let studentsInLobby = [];
+        
+        // Event listeners
+        createTeacherBtn.addEventListener('click', createTeacher);
+        createLobbyBtn.addEventListener('click', createLobby);
+        startGameBtn.addEventListener('click', startGame);
+        
+        // Check if we already have a teacher ID in localStorage
+        const savedTeacherId = localStorage.getItem('teacherId');
+        if (savedTeacherId) {
+            teacherId = savedTeacherId;
+            teacherIdSpan.textContent = teacherId;
+            teacherInfo.style.display = 'block';
+            lobbyPanel.style.display = 'block';
+            
+            // Check if we have a lobby ID
+            const savedLobbyId = localStorage.getItem('lobbyId');
+            if (savedLobbyId) {
+                lobbyId = savedLobbyId;
+                lobbyIdSpan.textContent = lobbyId;
+                lobbyInfo.style.display = 'block';
+                gamePanel.style.display = 'block';
+                
+                // Fetch students in the lobby
+                fetchStudentsInLobby();
+            }
+        }
+        
+        // Create a teacher account
+        async function createTeacher() {
+            const teacherName = teacherNameInput.value.trim();
+            
+            if (!teacherName) {
+                alert('Please enter your name');
+                return;
+            }
+            
+            try {
+                const response = await fetch(`/teachers?name=${encodeURIComponent(teacherName)}`, {
+                    method: 'POST'
+                });
+                
+                if (!response.ok) {
+                    throw new Error('Failed to create teacher account');
+                }
+                
+                const teacher = await response.json();
+                teacherId = teacher.teacherId;
+                
+                // Save teacher ID in localStorage
+                localStorage.setItem('teacherId', teacherId);
+                
+                // Show teacher info and lobby panel
+                teacherIdSpan.textContent = teacherId;
+                teacherInfo.style.display = 'block';
+                lobbyPanel.style.display = 'block';
+            } catch (error) {
+                alert('Error creating teacher account: ' + error.message);
+            }
+        }
+        
+        // Create a game lobby
+        async function createLobby() {
+            if (!teacherId) {
+                alert('Please create a teacher account first');
+                return;
+            }
+            
+            try {
+                // This is a placeholder - you'll need to implement the actual endpoint
+                const response = await fetch(`/api/lobby/create?teacherId=${teacherId}`, {
+                    method: 'POST'
+                });
+                
+                if (!response.ok) {
+                    throw new Error('Failed to create lobby');
+                }
+                
+                const lobby = await response.json();
+                lobbyId = lobby.lobbyId;
+                
+                // Save lobby ID in localStorage
+                localStorage.setItem('lobbyId', lobbyId);
+                
+                // Show lobby info and game panel
+                lobbyIdSpan.textContent = lobbyId;
+                lobbyInfo.style.display = 'block';
+                gamePanel.style.display = 'block';
+                
+                // Set up polling to check for students joining
+                setInterval(fetchStudentsInLobby, 5000);
+            } catch (error) {
+                alert('Error creating lobby: ' + error.message);
+            }
+        }
+        
+        // Fetch students in the lobby
+        async function fetchStudentsInLobby() {
+            if (!lobbyId) return;
+            
+            try {
+                // This is a placeholder - you'll need to implement the actual endpoint
+                const response = await fetch(`/api/lobby/${lobbyId}/students`);
+                
+                if (!response.ok) {
+                    throw new Error('Failed to fetch students');
+                }
+                
+                const students = await response.json();
+                updateStudentList(students);
+            } catch (error) {
+                console.error('Error fetching students:', error);
+            }
+        }
+        
+        // Update the student list display
+        function updateStudentList(students) {
+            studentsInLobby = students;
+            studentList.innerHTML = '';
+            
+            if (students.length === 0) {
+                const emptyMessage = document.createElement('p');
+                emptyMessage.textContent = 'No students have joined yet.';
+                studentList.appendChild(emptyMessage);
+                return;
+            }
+            
+            students.forEach(student => {
+                const studentItem = document.createElement('div');
+                studentItem.className = 'student-item';
+                
+                const nameSpan = document.createElement('span');
+                nameSpan.textContent = student.name || 'Anonymous Student';
+                
+                const idSpan = document.createElement('span');
+                idSpan.className = 'student-id';
+                idSpan.textContent = student.studentId;
+                
+                studentItem.appendChild(nameSpan);
+                studentItem.appendChild(idSpan);
+                studentList.appendChild(studentItem);
+            });
+        }
+        
+        // Start a game
+        async function startGame() {
+            if (!lobbyId) {
+                alert('Please create a lobby first');
+                return;
+            }
+            
+            const pdfFile = document.getElementById('pdfFile').files[0];
+            
+            if (!pdfFile) {
+                alert('Please upload a PDF file with lesson material');
+                return;
+            }
+            
+            try {
+                const formData = new FormData();
+                formData.append('lobbyId', lobbyId);
+                formData.append('file', pdfFile);
+                
+                const response = await fetch('/api/game/start', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                if (!response.ok) {
+                    throw new Error('Failed to start game');
+                }
+                
+                const result = await response.json();
+                alert('Game started successfully! Game Session ID: ' + result.gameSessionId);
+            } catch (error) {
+                alert('Error starting game: ' + error.message);
+            }
+        }
+    </script>
+</body>
+</html>
