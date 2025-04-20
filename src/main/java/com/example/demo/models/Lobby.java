@@ -17,7 +17,7 @@ import jakarta.persistence.OneToOne;
 public class Lobby {
 @Id
 @GeneratedValue(strategy = GenerationType.AUTO)
-private UUID lobbyId;
+private UUID id;
 @OneToOne(mappedBy = "lobby", cascade = CascadeType.ALL)
 private Teacher teacher;
 @OneToMany(mappedBy = "lobby",cascade = CascadeType.ALL)
@@ -30,12 +30,12 @@ private List<Question> questions;
 
 public Lobby(){}
 
-public UUID getLobbyId() {
-    return lobbyId;
+public UUID getId() {
+    return id;
 }
 
-public void setLobbyId(UUID lobbyId) {
-    this.lobbyId = lobbyId;
+public void setLobbyId(UUID id) {
+    this.id = id;
 }
 
 public Teacher getTeacher() {

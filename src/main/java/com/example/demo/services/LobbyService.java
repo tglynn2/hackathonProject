@@ -6,27 +6,30 @@ import java.util.UUID;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.example.demo.models.Lobby;
 import com.example.demo.models.Teacher;
+import com.example.demo.repositories.LobbyRepository;
 import com.example.demo.repositories.TeacherRepository;
 
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 
 @Service
-public class TeacherService {
+public class LobbyService {
       @Autowired 
-    TeacherRepository teacherRepository;
+    LobbyRepository lobbyRepository;
 
      @PersistenceContext
     private EntityManager entityManager;
 
-    public Teacher saveTeacher(Teacher teacher){
-        return teacherRepository.save(teacher);
+    public Lobby saveLobby(Lobby lobby){
+        return lobbyRepository.save(lobby);
     }
-    public Optional<Teacher> getTeacherByName(String name){
-        return teacherRepository.getTeacherByName(name);
+    public Optional<Lobby> getLobbyByTeacher(Teacher teacher){
+        return lobbyRepository.findByTeacher(teacher);
     }
-    public Optional<Teacher> findById(UUID id){
-        return teacherRepository.findById(id);
+
+    public Optional<Lobby> findById(UUID id){
+        return lobbyRepository.findById(id);
     }
 }

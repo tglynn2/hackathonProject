@@ -18,7 +18,7 @@ import jakarta.persistence.JoinColumn;
 public class Question {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
-    private UUID questionId;
+    private UUID id;
 
 
     @ManyToOne
@@ -39,11 +39,11 @@ public class Question {
     String questionText;
 
     public Question(){}
-    public UUID getQuestionId() {
-        return questionId;
+    public UUID getId() {
+        return id;
     }
-    public void setQuestionId(UUID questionId) {
-        this.questionId = questionId;
+    public void setId(UUID id) {
+        this.id = id;
     }
     public Lobby getLobby() {
         return lobby;

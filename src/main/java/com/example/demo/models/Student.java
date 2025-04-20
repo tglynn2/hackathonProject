@@ -15,7 +15,7 @@ import jakarta.persistence.ManyToOne;
 public class Student {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
-    private UUID studentId;
+    private UUID id;
     private int score;
     private String name;
     @ManyToOne
@@ -33,12 +33,12 @@ public class Student {
         this.name = name;
     }
 
-    public UUID getStudentId() {
-        return studentId;
+    public UUID getId() {
+        return id;
     }
 
-    public void setStudentId(UUID studentId) {
-        this.studentId = studentId;
+    public void setId(UUID id) {
+        this.id = id;
     }
 
     public int getScore() {

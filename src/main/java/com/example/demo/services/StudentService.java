@@ -5,6 +5,7 @@ import jakarta.persistence.PersistenceContext;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.example.demo.models.Student;
 import com.example.demo.repositories.StudentRepository;
 
 
