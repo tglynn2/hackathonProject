@@ -7,6 +7,7 @@ import java.util.Map;
 import java.util.UUID;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import jakarta.persistence.CollectionTable;
 import jakarta.persistence.Column;
@@ -45,7 +46,7 @@ public class Question {
     @Column(name = "is_correct")
     private Map<String, Boolean> options = new HashMap<>();
     
-    
+    @JsonIgnore
     @ManyToMany
     @JoinTable(
         name = "round_questions",
@@ -66,11 +67,7 @@ public class Question {
 
     // Getters and setters
     public UUID getQuestionId() {
-        return questionId;
-    }
-
-    public void setQuestionId(UUID questionId) {
-        this.questionId = questionId;
+        return id;
     }
 
     public String getQuestionText() {

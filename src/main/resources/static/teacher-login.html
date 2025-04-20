@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teacher Login</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f8f9fa;
+        }
+        
+        .container {
+            background-color: white;
+            border-radius: 10px;
+            padding: 30px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+        }
+        
+        input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+            font-size: 16px;
+        }
+        
+        .button-group {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-top: 30px;
+        }
+        
+        button {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s;
+        }
+        
+        .btn-login {
+            background-color: #4CAF50;
+            color: white;
+        }
+        
+        .btn-login:hover {
+            background-color: #45a049;
+        }
+        
+        .btn-create {
+            background-color: #2196F3;
+            color: white;
+        }
+        
+        .btn-create:hover {
+            background-color: #0b7dda;
+        }
+        
+        .result {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 4px;
+            background-color: #e7f3ff;
+            display: none;
+        }
+        
+        .error {
+            background-color: #ffebee;
+            color: #c62828;
+        }
+        
+        .dashboard-link {
+            display: block;
+            text-align: center;
+            margin-top: 15px;
+            text-decoration: none;
+            color: #2196F3;
+            font-weight: bold;
+        }
+        
+        .dashboard-link:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Teacher Login</h1>
+        
+        <div class="form-group">
+            <label for="teacherName">Teacher Name</label>
+            <input type="text" id="teacherName" placeholder="Enter your name">
+        </div>
+        
+        <div class="button-group">
+            <button id="loginBtn" class="btn-login">Login</button>
+            <button id="createBtn" class="btn-create">Create Account</button>
+        </div>
+        
+        <div id="result" class="result"></div>
+        
+        <a href="#" id="dashboardLink" class="dashboard-link" style="display: none;">Go to Dashboard</a>
+    </div>
+    
+    <script>
+        // DOM Elements
+        const teacherNameInput = document.getElementById('teacherName');
+        const loginBtn = document.getElementById('loginBtn');
+        const createBtn = document.getElementById('createBtn');
+        const resultDiv = document.getElementById('result');
+        const dashboardLink = document.getElementById('dashboardLink');
+        
+        // Base URL - change this if your server is hosted elsewhere
+        const baseUrl = 'http://localhost:8080';
+        
+        // Event Listeners
+        loginBtn.addEventListener('click', loginTeacher);
+        createBtn.addEventListener('click', createTeacher);
+        
+        // Check if we already have a teacher ID in localStorage
+        const savedTeacherId = localStorage.getItem('teacherId');
+        const savedTeacherName = localStorage.getItem('teacherName');
+        
+        if (savedTeacherId && savedTeacherName) {
+            // Pre-fill the name field
+            teacherNameInput.value = savedTeacherName;
+            showDashboardLink();
+        }
+        
+        // Login Teacher Function
+        async function loginTeacher() {
+            const teacherName = teacherNameInput.value.trim();
+            
+            if (!teacherName) {
+                showError('Please enter your name');
+                return;
+            }
+            
+            try {
+                const response = await fetch(`${baseUrl}/teachers/login?name=${encodeURIComponent(teacherName)}`, {
+                    method: 'GET',
+                    credentials: 'include' // Important for session cookies
+                });
+                
+                if (!response.ok) {
+                    if (response.status === 404) {
+                        showError('Teacher not found. Please create an account first.');
+                    } else {
+                        throw new Error(`Error ${response.status}: ${response.statusText}`);
+                    }
+                    return;
+                }
+                
+                const teacher = await response.json();
+                
+                if (!teacher || !teacher.id) {
+                    showError('Teacher not found. Please create an account first.');
+                    return;
+                }
+                
+                // Save teacher info in localStorage
+                localStorage.setItem('teacherId', teacher.id);
+                localStorage.setItem('teacherName', teacherName);
+                
+                // Show success message
+                showSuccess(`Welcome back, ${teacherName}!`);
+                showDashboardLink();
+                
+            } catch (error) {
+                showError(`Login failed: ${error.message}`);
+            }
+        }
+        
+        // Create Teacher Function
+        async function createTeacher() {
+            const teacherName = teacherNameInput.value.trim();
+            
+            if (!teacherName) {
+                showError('Please enter your name');
+                return;
+            }
+            
+            try {
+                const response = await fetch(`${baseUrl}/teachers/create?name=${encodeURIComponent(teacherName)}`, {
+                    method: 'POST',
+                    credentials: 'include' // Important for session cookies
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`Error ${response.status}: ${response.statusText}`);
+                }
+                
+                const teacher = await response.json();
+                
+                // Save teacher info in localStorage
+                localStorage.setItem('teacherId', teacher.id);
+                localStorage.setItem('teacherName', teacherName);
+                
+                // Show success message
+                showSuccess(`Account created successfully! Welcome, ${teacherName}!`);
+                showDashboardLink();
+                
+            } catch (error) {
+                showError(`Account creation failed: ${error.message}`);
+            }
+        }
+        
+        // Helper Functions
+        function showError(message) {
+            resultDiv.textContent = message;
+            resultDiv.classList.add('error');
+            resultDiv.style.display = 'block';
+        }
+        
+        function showSuccess(message) {
+            resultDiv.textContent = message;
+            resultDiv.classList.remove('error');
+            resultDiv.style.display = 'block';
+        }
+        
+        function showDashboardLink() {
+            dashboardLink.style.display = 'block';
+            dashboardLink.href = 'teacher-dashboard.html';
+        }
+    </script>
+</body>
+</html>

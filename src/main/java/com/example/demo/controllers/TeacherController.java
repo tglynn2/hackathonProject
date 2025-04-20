@@ -56,18 +56,34 @@ public class TeacherController {
     }
 
     @PostMapping("/newLobby")
-    public Lobby createLobby(HttpServletRequest request){
+    public ResponseEntity<?> createLobby(HttpServletRequest request) {
         HttpSession session = request.getSession(false);
-        UUID id = UUID.fromString(session.getAttribute("id").toString());
-        Teacher teacher = teacherService.findById(id).orElse(null);
-        Lobby lobby = new Lobby();
-        lobby.setTeacher(teacher);
-        teacher.setLobby(lobby);
-        teacherService.saveTeacher(teacher);
-        lobby.setLobbyId(teacher.getLobby().getId());
-        return lobby;
+        
+        // Check if session exists
+        if (session == null || session.getAttribute("id") == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                .body("You must be logged in to create a lobby. Please log in first.");
+        }
+        
+        try {
+            UUID id = UUID.fromString(session.getAttribute("id").toString());
+            Teacher teacher = teacherService.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Teacher not found"));
+                
+            Lobby lobby = new Lobby();
+            lobby.setTeacher(teacher);
+            teacher.setLobby(lobby);
+            teacherService.saveTeacher(teacher);
+            
+            return ResponseEntity.ok(lobby);
+        } catch (EntityNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body("Error creating lobby: " + e.getMessage());
+        }
     }
-    
+
     // New method to add questions to a teacher's lobby
     @PostMapping("/lobby/questions")
     public ResponseEntity<?> addQuestionsToLobby(
