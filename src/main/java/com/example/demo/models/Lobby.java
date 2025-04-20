@@ -1,5 +1,6 @@
 package com.example.demo.models;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -73,11 +74,26 @@ public void setQuestions(List<Question> questions) {
     @Enumerated(EnumType.STRING)
     private GameState currentState = GameState.WAITING_FOR_PLAYERS;
 
-    private int currentQuestionIndex = 0;
+    private int currentQuestionIndex = 10;
+
 
     @Transient
     private Map<UUID, String> currentAnswers = new ConcurrentHashMap<>();
-    //keep track of currentAnswers
+    //player id as key and answer
+
+
+    //this somwehere
+    //if ( currentAnswers.size = 4) assuming 4 players, we need a player amount variable
+    //{
+     //   transition ( ALL_ANSWERED)
+   // }
+
+
+
+
+
+
+
 
     public enum Event {
         START_GAME,
@@ -104,6 +120,7 @@ public void setQuestions(List<Question> questions) {
 
 
 
+
     public GameState transition(Event e) {
         switch (currentState) {
             case WAITING_FOR_PLAYERS:
@@ -123,6 +140,7 @@ public void setQuestions(List<Question> questions) {
 
             case COLLECT_ANSWERS:
                 // Now that all answers are in, advance to moving horses
+
                 if (e == Event.ALL_ANSWERED) {
                     currentState = GameState.MOVE_HORSES;
                     //   moveHorses();     method to move horses
@@ -150,24 +168,28 @@ public void setQuestions(List<Question> questions) {
         return currentState;
     }
 
-    int points = 5;
 
 
-//    private void moveHorses() {
-//        Question q = questions.get(currentQuestionIndex);
-//       //  points per answer, we could have some answers be worht more? that would have to be an Ai call though
-//        for (Student s : students) {
-//            String answer = currentAnswers.get(s.getStudentId());
-//
-//            boolean correct = //answer is correct method?
-//
-//            if (correct) {
-//
-//                s.setScore(s.getScore() + points);
-//            }
-//        }
-//        currentAnswers.clear();
-//    }
+
+    int tempPoints = 5;
+
+
+    private void moveHorses() {
+        Question q = questions.get(currentQuestionIndex);
+
+        for (Student s : students) {
+            String answer = currentAnswers.get(s.getId());
+
+
+            boolean correct = q.isCorrect(answer);
+
+            if (correct) {
+
+                s.setScore(s.getScore() + tempPoints);
+            }
+        }
+        currentAnswers.clear();
+    }
 
 
 
