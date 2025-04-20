@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teacher - Generate Questions</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        form {
+            background-color: #f5f5f5;
+            padding: 20px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 10px;
+        }
+        button {
+            padding: 10px 20px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        #result {
+            margin-top: 20px;
+            white-space: pre-wrap;
+            background-color: #f9f9f9;
+            padding: 15px;
+            border-radius: 5px;
+            display: none;
+        }
+        .question {
+            margin-bottom: 15px;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        .option {
+            margin-bottom: 5px;
+        }
+        .correct {
+            color: green;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <h1>Teacher - Generate Questions for Your Lobby</h1>
+    
+    <div id="loginStatus">Checking login status...</div>
+    
+    <div id="lobbySection" style="display: none;">
+        <h2>Your Lobby</h2>
+        <div id="lobbyInfo"></div>
+        
+        <h3>Generate Questions from PDF</h3>
+        <form id="questionForm">
+            <div>
+                <label for="pdfFile">Upload PDF:</label>
+                <input type="file" id="pdfFile" name="file" accept="application/pdf" required>
+            </div>
+            
+            <div>
+                <label for="numQuestions">Number of Questions:</label>
+                <input type="number" id="numQuestions" name="numQuestions" value="10" min="1" max="20">
+            </div>
+            
+            <div>
+                <label for="questionType">Question Type:</label>
+                <select id="questionType" name="questionType">
+                    <option value="multiple-choice">Multiple Choice</option>
+                    <option value="true-false">True/False</option>
+                    <option value="short-answer">Short Answer</option>
+                </select>
+            </div>
+            
+            <button type="submit">Generate Questions</button>
+        </form>
+    </div>
+    
+    <div id="result"></div>
+    
+    <script>
+        // Check login status
+        async function checkLoginStatus() {
+            try {
+                const response = await fetch('/teachers/lobby/questions');
+                
+                if (response.status === 401) {
+                    // Not logged in
+                    document.getElementById('loginStatus').innerHTML = 
+                        '<p>You are not logged in. Please <a href="/teacher-login.html">login</a> first.</p>';
+                    return false;
+                } else if (response.status === 400) {
+                    // Logged in but no lobby
+                    document.getElementById('loginStatus').innerHTML = 
+                        '<p>You need to create a lobby first. <a href="/create-lobby.html">Create Lobby</a></p>';
+                    return false;
+                } else if (response.ok) {
+                    // Logged in with a lobby
+                    const questions = await response.json();
+                    document.getElementById('loginStatus').innerHTML = 
+                        '<p>Logged in successfully.</p>';
+                    document.getElementById('lobbySection').style.display = 'block';
+                    
+                    // Show question count
+                    document.getElementById('lobbyInfo').innerHTML = 
+                        `<p>Your lobby currently has ${questions.length} question(s).</p>`;
+                    
+                    return true;
+                } else {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+            } catch (error) {
+                document.getElementById('loginStatus').innerHTML = 
+                    `<p>Error checking login status: ${error.message}</p>`;
+                return false;
+            }
+        }
+        
+        // Initial login check
+        checkLoginStatus();
+        
+        // Handle form submission
+        document.getElementById('questionForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData(this);
+            const resultDiv = document.getElementById('result');
+            
+            resultDiv.textContent = 'Generating questions... This may take a minute.';
+            resultDiv.style.display = 'block';
+            
+            try {
+                const response = await fetch('/teachers/lobby/generate-questions', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    throw new Error(`Error: ${errorText || response.status}`);
+                }
+                
+                const lobby = await response.json();
+                
+                // Display questions
+                resultDiv.innerHTML = `<h3>Successfully generated ${lobby.questions.length} questions!</h3>`;
+                
+                const questionsContainer = document.createElement('div');
+                questionsContainer.classList.add('questions-container');
+                
+                lobby.questions.forEach((question, index) => {
+                    const questionDiv = document.createElement('div');
+                    questionDiv.classList.add('question');
+                    
+                    const questionHeader = document.createElement('h4');
+                    questionHeader.textContent = `Question ${index + 1}: ${question.questionText}`;
+                    questionDiv.appendChild(questionHeader);
+                    
+                    const optionsList = document.createElement('ul');
+                    
+                    Object.entries(question.options).forEach(([optionText, isCorrect]) => {
+                        const optionItem = document.createElement('li');
+                        optionItem.classList.add('option');
+                        if (isCorrect) {
+                            optionItem.classList.add('correct');
+                        }
+                        optionItem.textContent = optionText;
+                        optionsList.appendChild(optionItem);
+                    });
+                    
+                    questionDiv.appendChild(optionsList);
+                    questionsContainer.appendChild(questionDiv);
+                });
+                
+                resultDiv.appendChild(questionsContainer);
+                
+                // Update lobby info
+                document.getElementById('lobbyInfo').innerHTML = 
+                    `<p>Your lobby now has ${lobby.questions.length} question(s).</p>`;
+                
+            } catch (error) {
+                resultDiv.textContent = `Error: ${error.message}`;
+            }
+        });
+    </script>
+</body>
+</html>
