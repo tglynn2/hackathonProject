@@ -176,7 +176,7 @@
             }
             
             try {
-                const response = await fetch(`/teachers?name=${encodeURIComponent(teacherName)}`, {
+                const response = await fetch(`/teachers/create?name=${encodeURIComponent(teacherName)}`, {
                     method: 'POST'
                 });
                 
@@ -208,7 +208,7 @@
             
             try {
                 // This is a placeholder - you'll need to implement the actual endpoint
-                const response = await fetch(`/api/lobby/create?teacherId=${teacherId}`, {
+                const response = await fetch(`/teachers/create?name=${name}`, {
                     method: 'POST'
                 });
                 

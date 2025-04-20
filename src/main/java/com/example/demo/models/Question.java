@@ -144,4 +144,16 @@ public class Question {
         
         return sb.toString();
     }
+
+    public boolean isCorrect(String answer) {
+
+if (getCorrectOptions().contains(answer)) {
+    return true;
+        }
+else return false;
+
+    }
+
+
+
 }

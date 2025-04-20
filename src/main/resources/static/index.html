@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TriviaRace</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f5f0ff;
+        }
+        
+        .header {
+            padding: 20px 40px;
+            text-align: left;
+            background: #6a0dad;
+            color: yellow;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+        
+        .header h1 {
+            margin: 0;
+            font-size: 32px;
+        }
+        
+        .header p {
+            margin: 5px 0 0;
+            font-size: 16px;
+        }
+        
+        .container {
+            display: flex;
+            justify-content: space-around;
+            padding: 40px;
+            flex-wrap: wrap;
+        }
+        
+        .rectangle {
+            height: 400px;
+            width: 400px;
+            background-color: #d1a1ff;
+            border-radius: 15px;
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+            overflow: hidden;
+        }
+        
+        .rectangle:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 12px 24px rgba(0, 0, 0, 0.25);
+        }
+        
+        .image-container {
+            width: 70%;
+            height: 70%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 0;
+        }
+        
+        .image-container img {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+        }
+        
+        .text {
+            position: absolute;
+            top: 40px;
+            width: 100%;
+            text-align: center;
+            color: #3a005f;
+            font-size: 28px;
+            font-weight: bold;
+            text-shadow: 0 1px 2px rgba(255, 255, 255, 0.8);
+            z-index: 1;
+        }
+        
+        /* Responsive adjustments */
+        @media (max-width: 900px) {
+            .container {
+                flex-direction: column;
+                align-items: center;
+            }
+            .rectangle {
+                width: 90%;
+                max-width: 400px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>TriviaRace</h1>
+        <p>Welcome, user! Choose your role:</p>
+    </div>
+    
+    <div class="container">
+        <div class="rectangle" id="teacher-box">
+            <div class="text">Teacher</div>
+            <div class="image-container">
+                <img src="/images/teacher-removebg-preview.png" alt="Teacher">
+            </div>
+        </div>
+        
+        <div class="rectangle" id="student-box">
+            <div class="text">Student</div>
+            <div class="image-container">
+                <img src="/images/student.png" alt="Student">
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            document.getElementById('teacher-box').addEventListener('click', function() {
+                window.location.href = '/teacher-pannel.html';
+            });
+            
+            document.getElementById('student-box').addEventListener('click', function() {
+                window.location.href = '/student.html';
+            });
+        
+            const boxes = document.querySelectorAll('.rectangle');
+            boxes.forEach(box => {
+                box.addEventListener('mousedown', function() {
+                    this.style.transform = 'translateY(-5px)';
+                    this.style.boxShadow = '0 3px 6px rgba(0, 0, 0, 0.2)';
+                });
+                
+                box.addEventListener('mouseup', function() {
+                    this.style.transform = 'translateY(-10px)';
+                    this.style.boxShadow = '0 12px 24px rgba(0, 0, 0, 0.25)';
+                });
+            });
+        });
+    </script>
+</body>
+</html>
