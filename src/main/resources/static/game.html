@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TriviaRace Game</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f5f0ff;
+        }
+        
+        .header {
+            padding: 20px 40px;
+            text-align: left;
+            background: #6a0dad;
+            color: yellow;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .race-track {
+            background-color: #e1d4f0;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .player {
+            margin-bottom: 15px;
+        }
+        
+        .player-name {
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        
+        .progress-bar {
+            height: 20px;
+            background-color: #d1d1d1;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background-color: #6a0dad;
+            transition: width 0.5s ease;
+        }
+        
+        .question-panel {
+            background-color: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        
+        .question-text {
+            font-size: 18px;
+            margin-bottom: 20px;
+        }
+        
+        .options-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .option-button {
+            padding: 10px;
+            background-color: #e1d4f0;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s;
+        }
+        
+        .option-button:hover {
+            background-color: #d1a1ff;
+        }
+        
+        .option-button.selected {
+            background-color: #6a0dad;
+            color: white;
+        }
+        
+        .message {
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        
+        .info {
+            background-color: #d1ecf1;
+            border: 1px solid #bee5eb;
+            color: #0c5460;
+        }
+        
+        .success {
+            background-color: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+        
+        .error {
+            background-color: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>TriviaRace</h1>
+        <p>Race to the finish by answering questions correctly!</p>
+    </div>
+    
+    <div class="container">
+        <div id="messageArea"></div>
+        
+        <div class="race-track" id="raceTrack">
+            <!-- Player progress bars will be added here -->
+        </div>
+        
+        <div class="question-panel" id="questionPanel">
+            <div class="question-text" id="questionText">Waiting for the game to start...</div>
+            <div class="options-grid" id="optionsGrid">
+                <!-- Answer options will be added here -->
+            </div>
+        </div>
+    </div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
+    <script>
+        // Configuration
+        const lobbyId = new URLSearchParams(window.location.search).get('lobbyId');
+        const studentId = localStorage.getItem('studentId');
+        const studentName = localStorage.getItem('studentName');
+        
+        if (!lobbyId || !studentId) {
+            showMessage('Missing lobby ID or student ID. Please join properly.', 'error');
+        }
+        
+        // DOM elements
+        const messageArea = document.getElementById('messageArea');
+        const raceTrack = document.getElementById('raceTrack');
+        const questionText = document.getElementById('questionText');
+        const optionsGrid = document.getElementById('optionsGrid');
+        
+        // Game state
+        let currentQuestion = null;
+        let selectedAnswer = null;
+        let stompClient = null;
+        
+        // Connect to WebSocket
+        function connect() {
+            const socket = new SockJS('/game-ws');
+            stompClient = Stomp.over(socket);
+            
+            stompClient.connect({}, function(frame) {
+                console.log('Connected to WebSocket');
+                
+                // Subscribe to game updates
+                stompClient.subscribe('/topic/game/' + lobbyId, function(message) {
+                    const gameState = JSON.parse(message.body);
+                    handleGameState(gameState);
+                });
+                
+                // Load initial game state
+                fetchGameState();
+                
+                // Load first question
+                fetchNextQuestion();
+            }, function(error) {
+                console.error('WebSocket connection error:', error);
+                showMessage('Connection error: ' + error, 'error');
+                
+                // Try to reconnect after 5 seconds
+                setTimeout(connect, 5000);
+            });
+        }
+        
+        // Fetch current game state
+        function fetchGameState() {
+            fetch('/game/status/' + lobbyId)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.active) {
+                        showMessage('Game is active!', 'info');
+                    } else {
+                        showMessage('Waiting for the game to start...', 'info');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error fetching game state:', error);
+                });
+        }
+        
+        // Fetch next question
+        function fetchNextQuestion() {
+            fetch('/game/question/' + lobbyId + '/' + studentId)
+                .then(response => response.json())
+                .then(question => {
+                    if (question) {
+                        displayQuestion(question);
+                    } else {
+                        // No more questions or game not started
+                        questionText.textContent = 'Waiting for the next question...';
+                        optionsGrid.innerHTML = '';
+                    }
+                })
+                .catch(error => {
+                    console.error('Error fetching question:', error);
+                });
+        }
+        
+        // Display question and options
+        function displayQuestion(question) {
+            currentQuestion = question;
+            
+            // Display question text
+            questionText.textContent = question.questionText;
+            
+            // Clear previous options
+            optionsGrid.innerHTML = '';
+            selectedAnswer = null;
+            
+            // Add options
+            for (const [text, isCorrect] of Object.entries(question.options)) {
+                const button = document.createElement('button');
+                button.className = 'option-button';
+                button.textContent = text;
+                button.dataset.answer = text;
+                
+                button.addEventListener('click', function() {
+                    // Deselect all options
+                    document.querySelectorAll('.option-button').forEach(btn => {
+                        btn.classList.remove('selected');
+                    });
+                    
+                    // Select this option
+                    this.classList.add('selected');
+                    selectedAnswer = text;
+                    
+                    // Submit answer
+                    submitAnswer();
+                });
+                
+                optionsGrid.appendChild(button);
+            }
+        }
+        
+        // Submit answer to server
+        function submitAnswer() {
+            if (!currentQuestion || !selectedAnswer) {
+                return;
+            }
+            
+            const payload = {
+                lobbyId: lobbyId,
+                studentId: studentId,
+                questionId: currentQuestion.questionId,
+                answer: selectedAnswer
+            };
+            
+            stompClient.send("/app/game/answer", {}, JSON.stringify(payload));
+            
+            // Disable options after submission
+            document.querySelectorAll('.option-button').forEach(btn => {
+                btn.disabled = true;
+            });
+            
+            // Wait for game state update, then fetch next question
+            setTimeout(fetchNextQuestion, 1000);
+        }
+        
+        // Handle game state updates
+        function handleGameState(gameState) {
+            console.log('Game state update:', gameState);
+            
+            if (gameState.type === 'GAME_STATE') {
+                updateRaceTrack(gameState.players);
+            } else if (gameState.type === 'GAME_OVER') {
+                const message = gameState.winnerName === studentName ? 
+                    'You won!' : `${gameState.winnerName} has won the game!`;
+                showMessage(message, 'success');
+                
+                // Disable options
+                document.querySelectorAll('.option-button').forEach(btn => {
+                    btn.disabled = true;
+                });
+                
+                questionText.textContent = 'Game Over!';
+            }
+        }
+        
+        // Update race track with player progress
+        function updateRaceTrack(players) {
+            raceTrack.innerHTML = '';
+            
+            players.forEach(player => {
+                const playerDiv = document.createElement('div');
+                playerDiv.className = 'player';
+                
+                const nameDiv = document.createElement('div');
+                nameDiv.className = 'player-name';
+                nameDiv.textContent = `${player.name} (${player.progress}%)`;
+                
+                const progressBarDiv = document.createElement('div');
+                progressBarDiv.className = 'progress-bar';
+                
+                const progressFillDiv = document.createElement('div');
+                progressFillDiv.className = 'progress-fill';
+                progressFillDiv.style.width = `${player.progress}%`;
+                
+                // Highlight current player
+                if (player.id === studentId) {
+                    nameDiv.style.color = '#6a0dad';
+                    progressFillDiv.style.backgroundColor = '#9933CC';
+                }
+                
+                progressBarDiv.appendChild(progressFillDiv);
+                playerDiv.appendChild(nameDiv);
+                playerDiv.appendChild(progressBarDiv);
+                raceTrack.appendChild(playerDiv);
+            });
+        }
+        
+        // Show message to user
+        function showMessage(text, type) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${type}`;
+            messageDiv.textContent = text;
+            
+            messageArea.innerHTML = '';
+            messageArea.appendChild(messageDiv);
+            
+            // Auto-hide info messages after 5 seconds
+            if (type === 'info') {
+                setTimeout(() => {
+                    messageDiv.remove();
+                }, 5000);
+            }
+        }
+        
+        // Start connection when page loads
+        document.addEventListener('DOMContentLoaded', connect);
+    </script>
+</body>
+</html>
